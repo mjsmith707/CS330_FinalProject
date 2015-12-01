@@ -7,6 +7,7 @@ enum class SurfGameState : uint8 {
 	LevelStart,
 	InSpawn,
 	Running,
+	Checkpoint,
 	OutOfBounds,
 	FinishedRunning,
 	UNKNOWN
@@ -57,6 +58,7 @@ private:
 	void handleLevelStart(float deltaTime);
 	void handleInSpawn(float deltaTime);
 	void handleRunning(float deltaTime);
+	void handleCheckpoint(float deltaTime);
 	void handleOutOfBounds(float deltaTime);
 	void handleFinishedRunning(float deltaTime);
 
@@ -65,6 +67,7 @@ private:
 	void handleTransitionLevelStart();
 	void handleTransitionInSpawn();
 	void handleTransitionRunning();
+	void handleTransitionCheckpoint();
 	void handleTransitionOutOfBounds();
 	void handleTransitionFinishedRunning();
 };

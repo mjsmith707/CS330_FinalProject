@@ -12,18 +12,24 @@ ASurfTriggerVolume::ASurfTriggerVolume()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	// Editor Box
+	// Trigger Box
 	cubeVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CubeVisualRepresentation"));
     RootComponent = cubeVisual;
     static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
     if (CubeVisualAsset.Succeeded()) {
         cubeVisual->SetStaticMesh(CubeVisualAsset.Object);
     }
-	cubeVisual->bHiddenInGame = true;
+	cubeVisual->bHiddenInGame = false;
 	cubeVisual->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
+	// Trigger Material
+	static ConstructorHelpers::FObjectFinder<UMaterial> material(TEXT("/Game/OtherContent/M_SurfTriggerVolume.M_SurfTriggerVolume"));
+    if (material.Succeeded()) {
+        cubeVisual->SetMaterial(0, material.Object);
+    }
+
 	// Arrow
-	UArrowComponent* arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
+	arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	arrow->AttachTo(RootComponent);
 	arrow->SetWorldScale3D(FVector(3.0f,1.0f,1.0f));
 }
@@ -33,7 +39,6 @@ void ASurfTriggerVolume::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//cubeVisual->OnComponentBeginOverlap.AddDynamic((AActor*)this, &ASurfTriggerVolume::OnBeginOverlap);
 	cubeVisual->OnComponentBeginOverlap.AddDynamic(this, &ASurfTriggerVolume::OnBeginOverlap);
 }
 
@@ -60,6 +65,10 @@ void ASurfTriggerVolume::OnBeginOverlap(AActor* OtherActor, UPrimitiveComponent*
 		}
 		case SurfTriggerType::Start: {
 			handleStart(player);
+			break;
+		}
+		case SurfTriggerType::Checkpoint: {
+			handleCheckpoint(player);
 			break;
 		}
 		case SurfTriggerType::Finish: {
@@ -107,6 +116,19 @@ void ASurfTriggerVolume::handleStart(APlayerCharacter* player) {
 		if (gm) {
 			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
 			gamemode->transitionState(SurfGameState::Running);
+		}
+	}
+}
+
+// Handle when the player enters a checkpoint
+void ASurfTriggerVolume::handleCheckpoint(APlayerCharacter* player) {
+	// Get Game Mode
+	UWorld* world = GetWorld();
+	if (world) {
+		AGameMode* gm = world->GetAuthGameMode();
+		if (gm) {
+			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
+			gamemode->transitionState(SurfGameState::Checkpoint);
 		}
 	}
 }

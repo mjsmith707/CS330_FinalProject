@@ -86,6 +86,10 @@ void ACS330_FinalProjectGameMode::transitionState(SurfGameState newstate) {
 			handleTransitionRunning();
 			break;
 		}
+		case SurfGameState::Checkpoint: {
+			handleTransitionCheckpoint();
+			break;
+		}
 		case SurfGameState::OutOfBounds: {
 			handleTransitionOutOfBounds();
 			break;
@@ -119,6 +123,13 @@ void ACS330_FinalProjectGameMode::handleRunning(float deltaTime) {
 	runTimer += deltaTime;
 	GEngine->AddOnScreenDebugMessage(7, 1.f, FColor::Red, FString::Printf(TEXT("State: Running")));
 	GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Blue, FString::Printf(TEXT("Time: %f"), runTimer));
+}
+
+void ACS330_FinalProjectGameMode::handleCheckpoint(float deltaTime) {
+	runTimer += deltaTime;
+	GEngine->AddOnScreenDebugMessage(7, 1.f, FColor::Red, FString::Printf(TEXT("State: Checkpoint")));
+	GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Blue, FString::Printf(TEXT("Time: %f"), runTimer));
+	
 }
 
 void ACS330_FinalProjectGameMode::handleOutOfBounds(float deltaTime) {
@@ -249,6 +260,22 @@ void ACS330_FinalProjectGameMode::handleTransitionRunning() {
 	switch (currentState) {
 		case SurfGameState::InSpawn: {
 			currentState = SurfGameState::Running;
+			break;
+		}
+		case SurfGameState::UNKNOWN:
+		default: {
+			break;
+		}
+	}
+}
+
+// Transition to Checkpoint
+void ACS330_FinalProjectGameMode::handleTransitionCheckpoint() {
+	switch (currentState) {
+		case SurfGameState::Running: {
+			currentState = SurfGameState::Checkpoint;
+			// Store the checkpoint time and switch back to Running
+			// Will need to setup an array of checkpoint volumes for ui usage
 			break;
 		}
 		case SurfGameState::UNKNOWN:

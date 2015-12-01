@@ -7,6 +7,7 @@ UENUM(EditAnywhere)
 enum class SurfTriggerType : uint8 {
 	Spawn,
 	Start,
+	Checkpoint,
 	Finish,
 	OutOfBounds,
 	PortalEntrance,
@@ -33,8 +34,13 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
+	// Cube
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* cubeVisual;
+
+	// Arrow (Useful for hiding on extremely large triggers like OOB
+	UPROPERTY(EditAnywhere)
+	UArrowComponent* arrow;
 
 	// This trigger's type
 	UPROPERTY(EditAnywhere)
@@ -51,6 +57,7 @@ public:
 	// Volume logic functions
 	void handleSpawn(APlayerCharacter* player);
 	void handleStart(APlayerCharacter* player);
+	void handleCheckpoint(APlayerCharacter* player);
 	void handleFinish(APlayerCharacter* player);
 	void handleOutOfBounds(APlayerCharacter* player);
 	void handlePortalEntrance(APlayerCharacter* player);
