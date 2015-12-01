@@ -30,6 +30,12 @@ class CS330_FINALPROJECT_API UPlayerCharacterMovementComponent : public UCharact
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") FVector AVel;
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") bool dbgArbitraryAccel;
 
+		void StartJumping();
+		void StopJumping();
+		bool AutoHop;
+
+		virtual void PhysCustom(float deltaTime, int32 Iterations) override;
+
 private:
 	void GetHit(FHitResult& Hit, bool& HaveContact, float DeltaTime);
 	

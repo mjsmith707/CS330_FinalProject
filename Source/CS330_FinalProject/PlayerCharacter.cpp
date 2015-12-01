@@ -25,6 +25,8 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	
 	// player takes control of this character
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	PCMovementComponent = (UPlayerCharacterMovementComponent*) GetMovementComponent();
+
 }
 
 
@@ -48,18 +50,14 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* InputCom
 	Super::SetupPlayerInputComponent(InputComponent);
 
 	// binds to character default behaviors
-	InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	
+	InputComponent->BindAction("Jump", IE_Pressed, this, &APlayerCharacter::Jump);
+	InputComponent->BindAction("Jump", IE_Released, this, &APlayerCharacter::StopJumping);
 	// binds to pawn default behaviors
 	InputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	InputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-
 	// our movement
 	InputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
-
-	
 }
 
 void APlayerCharacter::MoveForward(float axis){
@@ -72,4 +70,12 @@ void APlayerCharacter::MoveRight(float axis){
 	if (axis != 0.0f){
 		AddMovementInput(GetActorRightVector(), axis);
 	}
+}
+
+void APlayerCharacter::Jump(){
+	PCMovementComponent->StartJumping();
+}
+
+void APlayerCharacter::StopJumping(){
+	PCMovementComponent->StopJumping();
 }

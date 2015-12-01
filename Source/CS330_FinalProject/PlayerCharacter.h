@@ -27,8 +27,10 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
 	UCameraComponent* FirstPersonCameraComponent;
-	UPlayerCharacterMovementComponent* PlayerCharacterMovementComponent;
-	
+	UPlayerCharacterMovementComponent* PCMovementComponent;
+
 	void MoveForward(float axis);
 	void MoveRight(float axis);
+	void Jump();
+	void StopJumping();
 };
