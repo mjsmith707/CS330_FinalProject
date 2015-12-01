@@ -2,6 +2,7 @@
 
 #include "CS330_FinalProject.h"
 #include "PlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 // this initializer attaches our character movement component
@@ -78,4 +79,15 @@ void APlayerCharacter::Jump(){
 
 void APlayerCharacter::StopJumping(){
 	PCMovementComponent->StopJumping();
+}
+
+// Bridge function for TriggerVolume. Apparently rotation doesn't work (who knows...) but location did
+void APlayerCharacter::UpdateLocationAndRotation(FVector location, FRotator rotation) {
+	APlayerController* controller = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (controller) {
+		//controller->SetActorLocationAndRotation(location, rotation);
+		SetActorLocation(location);
+		controller->SetControlRotation(rotation);
+		
+	}
 }

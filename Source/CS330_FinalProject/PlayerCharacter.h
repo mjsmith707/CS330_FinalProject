@@ -33,4 +33,7 @@ public:
 	void MoveRight(float axis);
 	void Jump();
 	void StopJumping();
+
+	// Bridge function for TriggerVolume->CharMovementComponent
+	void UpdateLocationAndRotation(FVector location, FRotator rotation);
 };
