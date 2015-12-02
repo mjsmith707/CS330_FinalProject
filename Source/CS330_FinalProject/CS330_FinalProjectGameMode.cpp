@@ -194,12 +194,13 @@ void ACS330_FinalProjectGameMode::handleTransitionLevelStart() {
 				ASurfTriggerVolume* spawn = spawnVolumes[idx];
 
 				// Spawn player
-				player = World->SpawnActor<APlayerCharacter>(spawn->GetActorLocation(), spawn->GetActorRotation());
-
-				// Create controller classes
-				if (player) {
-					player->SpawnDefaultController();
+				APlayerController* pcontroller = UGameplayStatics::GetPlayerController(World, 0);
+				ACharacter* pcharacter = pcontroller->GetCharacter();
+				player = Cast<APlayerCharacter>(pcharacter);
+				if (!player) {
+					// Transition to error
 				}
+				player->UpdateLocationAndRotation(spawn->GetActorLocation(), spawn->GetActorRotation());
 			}
 
 			// Transition to InSpawn
@@ -240,12 +241,10 @@ void ACS330_FinalProjectGameMode::handleTransitionInSpawn() {
 		}
 		case SurfGameState::FinishedRunning: {
 			currentState = SurfGameState::InSpawn;
-			runTimer = 0.0f;
 			break;
 		}
 		case SurfGameState::Running: {
 			currentState = SurfGameState::InSpawn;
-			runTimer = 0.0f;
 			break;
 		}
 		case SurfGameState::UNKNOWN:
@@ -260,6 +259,8 @@ void ACS330_FinalProjectGameMode::handleTransitionRunning() {
 	switch (currentState) {
 		case SurfGameState::InSpawn: {
 			currentState = SurfGameState::Running;
+			// Reset the run timer
+			runTimer = 0.0f;
 			break;
 		}
 		case SurfGameState::UNKNOWN:
@@ -290,24 +291,18 @@ void ACS330_FinalProjectGameMode::handleTransitionOutOfBounds() {
 	switch (currentState) {
 		case SurfGameState::InSpawn: {
 			currentState = SurfGameState::OutOfBounds;
-			// Reset timer
-			runTimer = 0.0f;
 			// Transition back to InSpawn
 			handleTransitionInSpawn();
 			break;
 		}
 		case SurfGameState::Running: {
 			currentState = SurfGameState::OutOfBounds;
-			// Reset timer
-			runTimer = 0.0f;
 			// Transition back to InSpawn
 			handleTransitionInSpawn();
 			break;
 		}
 		case SurfGameState::FinishedRunning: {
 			currentState = SurfGameState::OutOfBounds;
-			// Reset timer
-			runTimer = 0.0f;
 			// Transition back to InSpawn
 			handleTransitionInSpawn();
 			break;
