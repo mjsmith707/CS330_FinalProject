@@ -10,7 +10,8 @@
 UPlayerCharacterMovementComponent::UPlayerCharacterMovementComponent(){
 	// useful variables to tweak:
 
-	this->MaxWalkSpeed =  800.0f;
+	// not used by our custom physics code
+	// this->MaxWalkSpeed =  800.0f;
 	// general movement and airspeed; these should be separated into 2 different things, so should be dynamically set depending on player state
 	// "The maximum ground speed when walking. Also determines maximum lateral speed when falling."
 	
@@ -47,12 +48,18 @@ UPlayerCharacterMovementComponent::UPlayerCharacterMovementComponent(){
 	C_AirAccelerationMaxVelocity = 150.0f;
 	C_GroundAccelerationMaxVelocity = 1600.0f;
 	C_MinInitialVelocity = 100.0f;
-	C_HopImpulse = 40000.0f;
+	C_HopImpulse = 52500.0f;
 
+	// this and C_HopImpulse are pretty closely tied together
+	this->GravityScale = 1.5f;
+
+	// don't think this does anything 
 	this->bMaintainHorizontalGroundVelocity = false;
+
 	// slide on all the ramps
 	this->SetWalkableFloorAngle(0.0f);
 
+	// auto bunnyhopping... works for single jumps too, toggled by the player input
 	AutoHop = false;
 
 	AAccel = FVector(0.0f, 0.0f, 0.0f);
