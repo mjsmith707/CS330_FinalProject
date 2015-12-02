@@ -34,7 +34,7 @@ class CS330_FINALPROJECT_API UPlayerCharacterMovementComponent : public UCharact
 		void StopJumping();
 		bool AutoHop;
 
-		virtual void PhysCustom(float deltaTime, int32 Iterations) override;
+		float GetCurrentSpeed();
 
 private:
 	void GetHit(FHitResult& Hit, bool& HaveContact, float DeltaTime);
@@ -42,4 +42,9 @@ private:
 	FVector Accelerate(FVector accelDir, FVector prevVelocity, float accelerate, float max_velocity, float DeltaTime);
 	FVector MoveGround(FVector accelDir, FVector prevVelocity, float DeltaTime);
 	FVector MoveAir(FVector accelDir, FVector prevVelocity, float DeltaTime);
+
+protected:
+	// override this for ramp behavior
+	virtual FVector HandleSlopeBoosting(const FVector& SlideResult, const FVector& Delta, const float Time, const FVector& Normal, const FHitResult& Hit) const;
+
 };
