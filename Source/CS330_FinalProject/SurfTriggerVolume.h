@@ -7,7 +7,6 @@ UENUM(EditAnywhere)
 enum class SurfTriggerType : uint8 {
 	Spawn,
 	Start,
-	Checkpoint,
 	Finish,
 	OutOfBounds,
 	PortalEntrance,
@@ -50,6 +49,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	ASurfTriggerVolume* portalExit;
 
+	// Indicator of which stage this belongs to
+	UPROPERTY(EditAnywhere)
+	uint8 stageIndex;
+
 	// Triggered when something enters the box
 	UFUNCTION()
 	void OnBeginOverlap(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -57,7 +60,6 @@ public:
 	// Volume logic functions
 	void handleSpawn(APlayerCharacter* player);
 	void handleStart(APlayerCharacter* player);
-	void handleCheckpoint(APlayerCharacter* player);
 	void handleFinish(APlayerCharacter* player);
 	void handleOutOfBounds(APlayerCharacter* player);
 	void handlePortalEntrance(APlayerCharacter* player);

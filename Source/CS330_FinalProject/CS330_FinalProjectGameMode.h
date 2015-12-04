@@ -7,7 +7,6 @@ enum class SurfGameState : uint8 {
 	LevelStart,
 	InSpawn,
 	Running,
-	Checkpoint,
 	OutOfBounds,
 	FinishedRunning,
 	UNKNOWN
@@ -45,11 +44,23 @@ private:
 	// Spawn Volumes
 	TArray<ASurfTriggerVolume*> spawnVolumes;
 
-	// Run Timer
+	// Index of current stage
+	unsigned int currentStage;
+
+	// Number of stages in level
+	unsigned int numStages;
+
+	// Total Run Timer
 	double runTimer;
 
-	// Array of times
+	// Array of stage timers
+	TArray<double> stageTimer;
+
+	// Array of best run times
 	TArray<double> bestTimes;
+
+	// Array of best stage times
+	TArray<double> bestStageTimes;
 
 	// Per tick state update
 	void updateState(float deltaTime);
@@ -58,7 +69,6 @@ private:
 	void handleLevelStart(float deltaTime);
 	void handleInSpawn(float deltaTime);
 	void handleRunning(float deltaTime);
-	void handleCheckpoint(float deltaTime);
 	void handleOutOfBounds(float deltaTime);
 	void handleFinishedRunning(float deltaTime);
 
@@ -67,7 +77,6 @@ private:
 	void handleTransitionLevelStart();
 	void handleTransitionInSpawn();
 	void handleTransitionRunning();
-	void handleTransitionCheckpoint();
 	void handleTransitionOutOfBounds();
 	void handleTransitionFinishedRunning();
 };

@@ -67,10 +67,6 @@ void ASurfTriggerVolume::OnBeginOverlap(AActor* OtherActor, UPrimitiveComponent*
 			handleStart(player);
 			break;
 		}
-		case SurfTriggerType::Checkpoint: {
-			handleCheckpoint(player);
-			break;
-		}
 		case SurfTriggerType::Finish: {
 			handleFinish(player);
 			break;
@@ -116,19 +112,6 @@ void ASurfTriggerVolume::handleStart(APlayerCharacter* player) {
 		if (gm) {
 			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
 			gamemode->transitionState(SurfGameState::Running);
-		}
-	}
-}
-
-// Handle when the player enters a checkpoint
-void ASurfTriggerVolume::handleCheckpoint(APlayerCharacter* player) {
-	// Get Game Mode
-	UWorld* world = GetWorld();
-	if (world) {
-		AGameMode* gm = world->GetAuthGameMode();
-		if (gm) {
-			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
-			gamemode->transitionState(SurfGameState::Checkpoint);
 		}
 	}
 }

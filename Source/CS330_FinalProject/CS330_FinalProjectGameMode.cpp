@@ -86,10 +86,6 @@ void ACS330_FinalProjectGameMode::transitionState(SurfGameState newstate) {
 			handleTransitionRunning();
 			break;
 		}
-		case SurfGameState::Checkpoint: {
-			handleTransitionCheckpoint();
-			break;
-		}
 		case SurfGameState::OutOfBounds: {
 			handleTransitionOutOfBounds();
 			break;
@@ -115,21 +111,22 @@ void ACS330_FinalProjectGameMode::handleLevelStart(float deltaTime) {
 }
 
 void ACS330_FinalProjectGameMode::handleInSpawn(float deltaTime) {
+	if (currentStage != 0) {
+		runTimer += deltaTime;
+	}
 	GEngine->AddOnScreenDebugMessage(7, 1.f, FColor::Red, FString::Printf(TEXT("State: InSpawn")));
-	GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Blue, FString::Printf(TEXT("Time: %f"), runTimer));
+	GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Red, FString::Printf(TEXT("Stage: %d"), currentStage));
+	GEngine->AddOnScreenDebugMessage(10, 1.f, FColor::Yellow, FString::Printf(TEXT("Run Time: %f"), runTimer));
+	GEngine->AddOnScreenDebugMessage(11, 1.f, FColor::Yellow, FString::Printf(TEXT("Stage Time: %f"), stageTimer[currentStage]));
 }
 
 void ACS330_FinalProjectGameMode::handleRunning(float deltaTime) {
 	runTimer += deltaTime;
+	stageTimer[currentStage] += deltaTime;
 	GEngine->AddOnScreenDebugMessage(7, 1.f, FColor::Red, FString::Printf(TEXT("State: Running")));
-	GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Blue, FString::Printf(TEXT("Time: %f"), runTimer));
-}
-
-void ACS330_FinalProjectGameMode::handleCheckpoint(float deltaTime) {
-	runTimer += deltaTime;
-	GEngine->AddOnScreenDebugMessage(7, 1.f, FColor::Red, FString::Printf(TEXT("State: Checkpoint")));
-	GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Blue, FString::Printf(TEXT("Time: %f"), runTimer));
-	
+	GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Red, FString::Printf(TEXT("Stage: %d"), currentStage));
+	GEngine->AddOnScreenDebugMessage(10, 1.f, FColor::Yellow, FString::Printf(TEXT("Run Time: %f"), runTimer));
+	GEngine->AddOnScreenDebugMessage(11, 1.f, FColor::Yellow, FString::Printf(TEXT("Stage Time: %f"), stageTimer[currentStage]));
 }
 
 void ACS330_FinalProjectGameMode::handleOutOfBounds(float deltaTime) {
@@ -137,8 +134,13 @@ void ACS330_FinalProjectGameMode::handleOutOfBounds(float deltaTime) {
 }
 
 void ACS330_FinalProjectGameMode::handleFinishedRunning(float deltaTime) {
+	if (currentStage+1 != numStages) {
+		runTimer += deltaTime;
+	}
 	GEngine->AddOnScreenDebugMessage(7, 1.f, FColor::Red, FString::Printf(TEXT("State: FinishedRunning")));
-	GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Blue, FString::Printf(TEXT("Time: %f"), runTimer));
+	GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Red, FString::Printf(TEXT("Stage: %d"), currentStage));
+	GEngine->AddOnScreenDebugMessage(10, 1.f, FColor::Yellow, FString::Printf(TEXT("Run Time: %f"), runTimer));
+	GEngine->AddOnScreenDebugMessage(11, 1.f, FColor::Yellow, FString::Printf(TEXT("Stage Time: %f"), stageTimer[currentStage]));
 }
 
 // Transition logic for each state
@@ -174,24 +176,26 @@ void ACS330_FinalProjectGameMode::handleTransitionLevelStart() {
 					// Add to volumes list
 					if (volume->volumeType == SurfTriggerType::Spawn) {
 						spawnVolumes.Add(volume);
+						stageTimer.Add(0.0f);
+						bestStageTimes.Add(0.0f);
+						numStages++;
 					}
 				}
 			}
 
+
 			// Spawn the player
 			UWorld* World = GetWorld();
 			if (World) {
-				// Get random spawn volume
-				int idx = FMath::RandRange(0, spawnVolumes.Num()-1);
-
 				// Test if thats valid. Should only trigger on an empty array
-				if (!spawnVolumes.IsValidIndex(idx)) {
+				if (!spawnVolumes.IsValidIndex(0)) {
 					// Transition to Error
+					GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Blue, FString::Printf(TEXT("Error: No valid spawn found for stage: %d!"), 0));
 					return;
 				}
 
 				// Get the target point to spawn at
-				ASurfTriggerVolume* spawn = spawnVolumes[idx];
+				ASurfTriggerVolume* spawn = spawnVolumes[0];
 
 				// Spawn player
 				APlayerController* pcontroller = UGameplayStatics::GetPlayerController(World, 0);
@@ -219,28 +223,32 @@ void ACS330_FinalProjectGameMode::handleTransitionInSpawn() {
 	switch (currentState) {
 		case SurfGameState::LevelStart: {
 			currentState = SurfGameState::InSpawn;
+			currentStage = 0;
 			runTimer = 0.0f;
+			stageTimer[currentStage] = 0.0f;
 			break;
 		}
 		case SurfGameState::OutOfBounds: {
 			currentState = SurfGameState::InSpawn;
 			// Move Player to spawn
-			// Get random spawn volume
-			int idx = FMath::RandRange(0, spawnVolumes.Num()-1);
 
 			// Test if thats valid. Should only trigger on an empty array
-			if (!spawnVolumes.IsValidIndex(idx)) {
+			if (!spawnVolumes.IsValidIndex(currentStage)) {
 				// Transition to Error
+				GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Blue, FString::Printf(TEXT("Error: No valid spawn found for stage: %d!"), currentStage));
 				return;
 			}
 
 			// Get the target point to spawn at
-			ASurfTriggerVolume* spawn = spawnVolumes[idx];
+			ASurfTriggerVolume* spawn = spawnVolumes[currentStage];
 			player->UpdateLocationAndRotation(spawn->GetActorLocation(), spawn->GetActorRotation());
 			break;
 		}
 		case SurfGameState::FinishedRunning: {
 			currentState = SurfGameState::InSpawn;
+			// Move to next stage
+			currentStage = currentStage+1 == numStages ? 0 : currentStage+1;
+			stageTimer[currentStage] = 0.0f;
 			break;
 		}
 		case SurfGameState::Running: {
@@ -260,23 +268,11 @@ void ACS330_FinalProjectGameMode::handleTransitionRunning() {
 		case SurfGameState::InSpawn: {
 			currentState = SurfGameState::Running;
 			// Reset the run timer
-			runTimer = 0.0f;
-			break;
-		}
-		case SurfGameState::UNKNOWN:
-		default: {
-			break;
-		}
-	}
-}
-
-// Transition to Checkpoint
-void ACS330_FinalProjectGameMode::handleTransitionCheckpoint() {
-	switch (currentState) {
-		case SurfGameState::Running: {
-			currentState = SurfGameState::Checkpoint;
-			// Store the checkpoint time and switch back to Running
-			// Will need to setup an array of checkpoint volumes for ui usage
+			if (currentStage == 0) {
+				runTimer = 0.0f;
+			}
+			// Reset the stage timer
+			stageTimer[currentStage] = 0.0f;
 			break;
 		}
 		case SurfGameState::UNKNOWN:
@@ -319,7 +315,15 @@ void ACS330_FinalProjectGameMode::handleTransitionFinishedRunning() {
 	switch (currentState) {
 		case SurfGameState::Running: {
 			currentState = SurfGameState::FinishedRunning;
-			bestTimes.Add(runTimer);
+			if (currentStage+1 == numStages) {
+				// Add to best times
+				// FIXME: need to actually properly do this
+				bestTimes.Add(runTimer);
+			}
+			// Update best stage time
+			if ((bestStageTimes[currentStage] > stageTimer[currentStage]) || (bestStageTimes[currentStage] == 0)) {
+				bestStageTimes[currentStage] = stageTimer[currentStage];
+			}
 			break;
 		}
 		case SurfGameState::UNKNOWN:
