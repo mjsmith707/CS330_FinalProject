@@ -36,4 +36,7 @@ public:
 
 	// Bridge function for TriggerVolume->CharMovementComponent
 	void UpdateLocationAndRotation(FVector location, FRotator rotation);
+
+	// Returns the current speed of the player for HUD purposes
+	double getCurrentSpeed();
 };

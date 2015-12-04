@@ -91,3 +91,8 @@ void APlayerCharacter::UpdateLocationAndRotation(FVector location, FRotator rota
 		
 	}
 }
+
+// Returns the current speed of the player for HUD purposes
+double APlayerCharacter::getCurrentSpeed() {
+	return PCMovementComponent->GetCurrentSpeed();
+}

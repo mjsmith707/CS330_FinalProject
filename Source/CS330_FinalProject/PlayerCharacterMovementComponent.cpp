@@ -234,7 +234,7 @@ void UPlayerCharacterMovementComponent::StopJumping(){
 	AutoHop = false;
 }
 
-float UPlayerCharacterMovementComponent::GetCurrentSpeed(){
+double UPlayerCharacterMovementComponent::GetCurrentSpeed(){
 	return Velocity.Size();
 }
 

@@ -34,7 +34,7 @@ class CS330_FINALPROJECT_API UPlayerCharacterMovementComponent : public UCharact
 		void StopJumping();
 		bool AutoHop;
 
-		float GetCurrentSpeed();
+		double GetCurrentSpeed();
 
 private:
 	void GetHit(FHitResult& Hit, bool& HaveContact, float DeltaTime);

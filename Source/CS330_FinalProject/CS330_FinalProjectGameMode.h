@@ -14,6 +14,7 @@ enum class SurfGameState : uint8 {
 
 class APlayerCharacter;
 class ASurfTriggerVolume;
+class ACS330_FinalProjectHUD;
 
 #include "GameFramework/GameMode.h"
 #include "CS330_FinalProjectGameMode.generated.h"
@@ -29,17 +30,25 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
     virtual void BeginPlay() override;
 
+	// To get the current state
 	SurfGameState getCurrentState() const;
 
 	// For changing between states
 	void transitionState(SurfGameState newstate);
-
 private:
 	// Current game state
 	SurfGameState currentState;
 
 	// Player Character
 	APlayerCharacter* player;
+
+	// Player's HUD
+	ACS330_FinalProjectHUD* hud;
+	const float stageInfoDrawMaxTime = 5.0f;
+	float stageInfoDrawTime;
+	bool drawStageInfo;
+	double hudStageTime;
+	double hudStageRecord;
 
 	// Spawn Volumes
 	TArray<ASurfTriggerVolume*> spawnVolumes;
@@ -56,14 +65,17 @@ private:
 	// Array of stage timers
 	TArray<double> stageTimer;
 
-	// Array of best run times
-	TArray<double> bestTimes;
+	// Best run time
+	double bestTime;
 
 	// Array of best stage times
 	TArray<double> bestStageTimes;
 
 	// Per tick state update
 	void updateState(float deltaTime);
+
+	// Hud update function
+	void updateHUD(float deltaTime);
 
 	void handleMainMenu(float deltaTime);
 	void handleLevelStart(float deltaTime);

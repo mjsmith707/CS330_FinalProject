@@ -20,6 +20,7 @@ ACS330_FinalProjectGameMode::ACS330_FinalProjectGameMode()
 void ACS330_FinalProjectGameMode::Tick( float DeltaSeconds ) {
 	Super::Tick(DeltaSeconds);
 	updateState(DeltaSeconds);
+	updateHUD(DeltaSeconds);
 }
 
 void ACS330_FinalProjectGameMode::BeginPlay() {
@@ -196,13 +197,16 @@ void ACS330_FinalProjectGameMode::handleTransitionLevelStart() {
 
 				// Get the target point to spawn at
 				ASurfTriggerVolume* spawn = spawnVolumes[0];
-
 				// Spawn player
 				APlayerController* pcontroller = UGameplayStatics::GetPlayerController(World, 0);
 				ACharacter* pcharacter = pcontroller->GetCharacter();
+				AHUD* phud = pcontroller->GetHUD();
 				player = Cast<APlayerCharacter>(pcharacter);
-				if (!player) {
+				hud = Cast<ACS330_FinalProjectHUD>(phud);
+				if ((!player) || (!hud)) {
 					// Transition to error
+					GEngine->AddOnScreenDebugMessage(9, 1.f, FColor::Blue, FString::Printf(TEXT("Failed to find either the player or hud class object!")));
+					return;
 				}
 				player->UpdateLocationAndRotation(spawn->GetActorLocation(), spawn->GetActorRotation());
 			}
@@ -317,13 +321,15 @@ void ACS330_FinalProjectGameMode::handleTransitionFinishedRunning() {
 			currentState = SurfGameState::FinishedRunning;
 			if (currentStage+1 == numStages) {
 				// Add to best times
-				// FIXME: need to actually properly do this
-				bestTimes.Add(runTimer);
+				if ((bestTime > runTimer) || (bestTime == 0.0f)) {
+					bestTime = runTimer;
+				}
 			}
 			// Update best stage time
 			if ((bestStageTimes[currentStage] > stageTimer[currentStage]) || (bestStageTimes[currentStage] == 0)) {
 				bestStageTimes[currentStage] = stageTimer[currentStage];
 			}
+			drawStageInfo = true;
 			break;
 		}
 		case SurfGameState::UNKNOWN:
@@ -331,4 +337,26 @@ void ACS330_FinalProjectGameMode::handleTransitionFinishedRunning() {
 			break;
 		}
 	}
+}
+
+//unsigned int currentStage, double runTime, double runRecord, double stageTime, double stageRecord, double stageTimeComplete, double stageRecordComplete, double currentSpeed, bool drawStageInformation)
+// Called per tick to update hud variables
+void ACS330_FinalProjectGameMode::updateHUD(float deltaTime) {
+	// Increment counter
+	if (drawStageInfo) {
+		// Set static values for the duration of the timer
+		if (stageInfoDrawTime == 0.0f) {
+			hudStageTime = stageTimer[currentStage];
+			hudStageRecord = bestStageTimes[currentStage];
+		}
+		stageInfoDrawTime += deltaTime;
+	}
+	if (stageInfoDrawTime > stageInfoDrawMaxTime) {
+		drawStageInfo = false;
+		stageInfoDrawTime = 0.0f;
+		hudStageTime = 0.0f;
+		hudStageRecord = 0.0f;
+	}
+	// Update HUD's variables for later drawing
+	hud->setHudVariables(currentStage+1, runTimer, bestTime, stageTimer[currentStage], bestStageTimes[currentStage], hudStageTime, hudStageRecord, player->getCurrentSpeed(), drawStageInfo);
 }
