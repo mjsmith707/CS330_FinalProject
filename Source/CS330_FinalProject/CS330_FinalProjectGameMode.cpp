@@ -251,7 +251,10 @@ void ACS330_FinalProjectGameMode::handleTransitionInSpawn() {
 		case SurfGameState::FinishedRunning: {
 			currentState = SurfGameState::InSpawn;
 			// Move to next stage
-			currentStage = currentStage+1 == numStages ? 0 : currentStage+1;
+			if (lastHitSpawnStage != currentStage) {
+				currentStage = currentStage+1 == numStages ? 0 : currentStage+1;
+			}
+			
 			stageTimer[currentStage] = 0.0f;
 			break;
 		}
@@ -318,6 +321,10 @@ void ACS330_FinalProjectGameMode::handleTransitionOutOfBounds() {
 void ACS330_FinalProjectGameMode::handleTransitionFinishedRunning() {
 	switch (currentState) {
 		case SurfGameState::Running: {
+			// Don't allow finish from the wrong stage
+			if (lastHitFinishedStage != currentStage) {
+				return;
+			}
 			currentState = SurfGameState::FinishedRunning;
 			if (currentStage+1 == numStages) {
 				// Add to best times
@@ -329,7 +336,10 @@ void ACS330_FinalProjectGameMode::handleTransitionFinishedRunning() {
 			if ((bestStageTimes[currentStage] > stageTimer[currentStage]) || (bestStageTimes[currentStage] == 0)) {
 				bestStageTimes[currentStage] = stageTimer[currentStage];
 			}
+			// Set static values for the duration of the timer
 			drawStageInfo = true;
+			hudStageTime = stageTimer[currentStage];
+			hudStageRecord = bestStageTimes[currentStage];
 			break;
 		}
 		case SurfGameState::UNKNOWN:
@@ -344,11 +354,6 @@ void ACS330_FinalProjectGameMode::handleTransitionFinishedRunning() {
 void ACS330_FinalProjectGameMode::updateHUD(float deltaTime) {
 	// Increment counter
 	if (drawStageInfo) {
-		// Set static values for the duration of the timer
-		if (stageInfoDrawTime == 0.0f) {
-			hudStageTime = stageTimer[currentStage];
-			hudStageRecord = bestStageTimes[currentStage];
-		}
 		stageInfoDrawTime += deltaTime;
 	}
 	if (stageInfoDrawTime > stageInfoDrawMaxTime) {
@@ -359,4 +364,13 @@ void ACS330_FinalProjectGameMode::updateHUD(float deltaTime) {
 	}
 	// Update HUD's variables for later drawing
 	hud->setHudVariables(currentStage+1, runTimer, bestTime, stageTimer[currentStage], bestStageTimes[currentStage], hudStageTime, hudStageRecord, player->getCurrentSpeed(), drawStageInfo);
+}
+
+// Called by SurfTriggerVolume
+void ACS330_FinalProjectGameMode::setLastHitSpawnStage(unsigned int stageID) {
+	this->lastHitSpawnStage = stageID;
+}
+
+void ACS330_FinalProjectGameMode::setLastHitFinishedStage(unsigned int stageID) {
+	this->lastHitFinishedStage = stageID;
 }

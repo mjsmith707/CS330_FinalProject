@@ -35,6 +35,10 @@ public:
 
 	// For changing between states
 	void transitionState(SurfGameState newstate);
+
+	// Called by SurfTriggerVolume
+	void setLastHitSpawnStage(unsigned int stageID);
+	void setLastHitFinishedStage(unsigned int stageID);
 private:
 	// Current game state
 	SurfGameState currentState;
@@ -55,6 +59,12 @@ private:
 
 	// Index of current stage
 	unsigned int currentStage;
+
+	// Stage of last hit spawn
+	unsigned int lastHitSpawnStage;
+
+	// Stage of last hit finished
+	unsigned int lastHitFinishedStage;
 
 	// Number of stages in level
 	unsigned int numStages;
@@ -77,6 +87,7 @@ private:
 	// Hud update function
 	void updateHUD(float deltaTime);
 
+	// Tick functions for each state
 	void handleMainMenu(float deltaTime);
 	void handleLevelStart(float deltaTime);
 	void handleInSpawn(float deltaTime);

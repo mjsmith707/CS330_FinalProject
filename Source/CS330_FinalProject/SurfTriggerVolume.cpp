@@ -98,6 +98,7 @@ void ASurfTriggerVolume::handleSpawn(APlayerCharacter* player) {
 		AGameMode* gm = world->GetAuthGameMode();
 		if (gm) {
 			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
+			gamemode->setLastHitSpawnStage(this->stageIndex);
 			gamemode->transitionState(SurfGameState::InSpawn);
 		}
 	}
@@ -124,7 +125,12 @@ void ASurfTriggerVolume::handleFinish(APlayerCharacter* player) {
 		AGameMode* gm = world->GetAuthGameMode();
 		if (gm) {
 			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
+			gamemode->setLastHitFinishedStage(this->stageIndex);
 			gamemode->transitionState(SurfGameState::FinishedRunning);
+			// Move the player through the portal
+			if (portalExit) {
+				player->UpdateLocationAndRotation(portalExit->GetActorLocation(), portalExit->GetActorRotation());
+			}
 		}
 	}
 }

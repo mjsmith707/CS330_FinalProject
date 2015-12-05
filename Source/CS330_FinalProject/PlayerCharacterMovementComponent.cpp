@@ -135,11 +135,12 @@ void UPlayerCharacterMovementComponent::TickComponent(float DeltaTime, enum ELev
 
 	// debug info
 	// accel seems to not have a z-component? Is this just gravity? Even for jumps, no z-accel at all... what about z-accel for going up ramps?
-	GEngine->AddOnScreenDebugMessage(2, 1.f, FColor::Green, FString::Printf(TEXT("Acceleration: (%0.3f, %0.3f, %0.3f), Z-Gravity accel: %f"), Acceleration.X, Acceleration.Y, Acceleration.Z, GetGravityZ()));
+	/*GEngine->AddOnScreenDebugMessage(2, 1.f, FColor::Green, FString::Printf(TEXT("Acceleration: (%0.3f, %0.3f, %0.3f), Z-Gravity accel: %f"), Acceleration.X, Acceleration.Y, Acceleration.Z, GetGravityZ()));
 	GEngine->AddOnScreenDebugMessage(3, 1.f, FColor::Green, FString::Printf(TEXT("Velocity: %f (%0.3f, %0.3f, %0.3f)"), Velocity.Size(), Velocity.X, Velocity.Y, Velocity.Z));
 	GEngine->AddOnScreenDebugMessage(4, 1.f, FColor::Green, FString::Printf(TEXT("Consumed input: (%0.3f, %0.3f, %0.3f)"), consumed.X, consumed.Y, consumed.Z));
 	GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, FString::Printf(TEXT("CustomFalling? %d          Falling? %d          Flying? %d          Walking? %d          IsMovingOnGround? %d          HaveContact? %d          AirAccelerating? %d"), MovementMode == MOVE_Custom, IsFalling(), IsFlying(), IsWalking(), IsMovingOnGround(), HaveContact, AirAccelerating));
 	GEngine->AddOnScreenDebugMessage(6, 1.f, HaveContact ? FColor::Green : FColor::Red, FString::Printf(TEXT("Contact normal: (%f, %f, %f)"), HitSurfaceNormal.X, HitSurfaceNormal.Y, HitSurfaceNormal.Z));
+	*/
 }
 
 void UPlayerCharacterMovementComponent::GetHit(FHitResult& Hit, bool& HaveContact, float DeltaTime){
