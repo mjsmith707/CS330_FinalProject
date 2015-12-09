@@ -42,14 +42,15 @@ UPlayerCharacterMovementComponent::UPlayerCharacterMovementComponent(){
 	this->GroundFriction = 0.0f;
 
 	// carefully chosen values
-	C_AirAccelerationFriction = 5.0f;
-	C_AirAcceleration = 30000.0f;
-	C_GroundAcceleration = 3200.0f;
-	C_AirAccelerationMaxVelocity = 150.0f;
-	C_GroundAccelerationMaxVelocity = 1600.0f;
-	C_MinInitialVelocity = 100.0f;
+	C_InitialAirAccelerationFriction = 5.0f;
+	C_InitialAirAcceleration = 30000.0f;
+	C_InitialGroundAcceleration = 3200.0f;
+	C_InitialAirAccelerationMaxVelocity = 150.0f;
+	C_InitialGroundAccelerationMaxVelocity = 1600.0f;
+	C_InitialMinInitialVelocity = 100.0f;
 	C_HopImpulse = 52500.0f;
 
+    C_DeltaTimeForPhysics = (1.f / 120.f); // please don't fail me
 	// this and C_HopImpulse are pretty closely tied together
 	this->GravityScale = 1.5f;
 
@@ -133,6 +134,18 @@ void UPlayerCharacterMovementComponent::TickComponent(float DeltaTime, enum ELev
 	* end adjustments to player trajectory
 	*/
 
+    float AdjustedDT = DeltaTime / C_DeltaTimeForPhysics;
+    GEngine->AddOnScreenDebugMessage(2, 1.f, FColor::Green, FString::Printf(TEXT("DT: %f, ADT: %f"), DeltaTime, AdjustedDT));
+	
+    // don't ask questions
+    // physics: fixed
+    //C_AirAccelerationFriction = C_InitialAirAccelerationFriction * AdjustedDT;
+    C_AirAccelerationFriction = C_InitialAirAccelerationFriction;
+    C_AirAcceleration = C_InitialAirAcceleration * AdjustedDT;
+    C_GroundAcceleration = C_InitialGroundAcceleration * AdjustedDT;
+    C_AirAccelerationMaxVelocity = C_InitialAirAccelerationMaxVelocity * AdjustedDT;
+    C_GroundAccelerationMaxVelocity = C_InitialGroundAccelerationMaxVelocity * AdjustedDT;
+    C_MinInitialVelocity = C_InitialMinInitialVelocity* AdjustedDT;
 	// debug info
 	// accel seems to not have a z-component? Is this just gravity? Even for jumps, no z-accel at all... what about z-accel for going up ramps?
 	/*GEngine->AddOnScreenDebugMessage(2, 1.f, FColor::Green, FString::Printf(TEXT("Acceleration: (%0.3f, %0.3f, %0.3f), Z-Gravity accel: %f"), Acceleration.X, Acceleration.Y, Acceleration.Z, GetGravityZ()));

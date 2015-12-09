@@ -166,14 +166,14 @@ void ACS330_FinalProjectHUD::drawStageInfo(const FVector2D& position, const FVec
 }
 
 // Public setter for updating the hud
-void ACS330_FinalProjectHUD::setHudVariables(unsigned int currentStage, double runTime, double runRecord, double stageTime, double stageRecord, double stageTimeComplete, double stageRecordComplete, double currentSpeed, bool drawStageInformation) {
-	this->currentStage = currentStage;
-	this->runTime = runTime;
-	this->stageTime = stageTime;
-	this->runRecord = runRecord;
-	this->stageTimeComplete = stageTimeComplete;
-	this->stageRecordComplete = stageRecordComplete;
-	this->stageRecord = stageRecord;
-	this->currentSpeed = currentSpeed;
-	this->drawStageInformation = drawStageInformation;
+void ACS330_FinalProjectHUD::setHudVariables(unsigned int currentStage1, double runTime1, double runRecord1, double stageTime1, double stageRecord1, double stageTimeComplete1, double stageRecordComplete1, double currentSpeed1, bool drawStageInformation1) {
+	this->currentStage = currentStage1;
+	this->runTime = runTime1;
+	this->stageTime = stageTime1;
+	this->runRecord = runRecord1;
+	this->stageTimeComplete = stageTimeComplete1;
+	this->stageRecordComplete = stageRecordComplete1;
+	this->stageRecord = stageRecord1;
+	this->currentSpeed = currentSpeed1;
+	this->drawStageInformation = drawStageInformation1;
 }

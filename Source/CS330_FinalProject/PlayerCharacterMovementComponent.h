@@ -25,6 +25,15 @@ class CS330_FINALPROJECT_API UPlayerCharacterMovementComponent : public UCharact
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_GroundAccelerationMaxVelocity;
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_MinInitialVelocity;
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_HopImpulse;
+    
+    
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_DeltaTimeForPhysics;
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_InitialAirAccelerationFriction;
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_InitialAirAcceleration;
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_InitialGroundAcceleration;
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_InitialAirAccelerationMaxVelocity;
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_InitialGroundAccelerationMaxVelocity;
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") float C_InitialMinInitialVelocity;
 
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") FVector AAccel;
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Airstrafe") FVector AVel;
