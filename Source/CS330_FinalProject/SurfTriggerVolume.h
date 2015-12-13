@@ -64,4 +64,8 @@ public:
 	void handleOutOfBounds(APlayerCharacter* player);
 	void handlePortalEntrance(APlayerCharacter* player);
 	void handlePortalExit(APlayerCharacter* player);
+
+	FVector GhostStartPos;
+
+
 };

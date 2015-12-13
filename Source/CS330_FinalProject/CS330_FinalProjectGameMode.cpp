@@ -280,6 +280,9 @@ void ACS330_FinalProjectGameMode::handleTransitionRunning() {
 			}
 			// Reset the stage timer
 			stageTimer[currentStage] = 0.0f;
+			//start the recording of replay
+			APlayerCharacter* Character = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+			//Character->record = true;
 			break;
 		}
 		case SurfGameState::UNKNOWN:
@@ -321,6 +324,8 @@ void ACS330_FinalProjectGameMode::handleTransitionOutOfBounds() {
 void ACS330_FinalProjectGameMode::handleTransitionFinishedRunning() {
 	switch (currentState) {
 		case SurfGameState::Running: {
+			APlayerCharacter* Character = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+			
 			// Don't allow finish from the wrong stage
 			if (lastHitFinishedStage != currentStage) {
 				return;
@@ -328,9 +333,20 @@ void ACS330_FinalProjectGameMode::handleTransitionFinishedRunning() {
 			currentState = SurfGameState::FinishedRunning;
 			if (currentStage+1 == numStages) {
 				// Add to best times
+
 				if ((bestTime > runTimer) || (bestTime == 0.0f)) {
 					bestTime = runTimer;
+					if (Character->GhostReplay){
+						Character->GhostReplay->DestroyGhost();
+					}
+					Character->CopyBest();
+					Character->movementArray.Empty();
 				}
+
+				Character->EndOfRun();
+				//Character->record = false;
+				Character->movementArray.Empty();
+				
 			}
 			// Update best stage time
 			if ((bestStageTimes[currentStage] > stageTimer[currentStage]) || (bestStageTimes[currentStage] == 0)) {

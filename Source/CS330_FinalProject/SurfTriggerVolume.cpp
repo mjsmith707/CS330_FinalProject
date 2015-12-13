@@ -32,6 +32,7 @@ ASurfTriggerVolume::ASurfTriggerVolume()
 	arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComponent"));
 	arrow->AttachTo(RootComponent);
 	arrow->SetWorldScale3D(FVector(3.0f,1.0f,1.0f));
+
 }
 
 // Called when the game starts or when spawned
@@ -113,6 +114,13 @@ void ASurfTriggerVolume::handleStart(APlayerCharacter* player) {
 		if (gm) {
 			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
 			gamemode->transitionState(SurfGameState::Running);
+			APlayerCharacter* Character = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+			//Character->record = true;
+			if (Character->endOfRun == true){
+				Character->endOfRun = false;
+				Character->movementArray.Empty();
+				Character->StartGhost();
+			}
 		}
 	}
 }
@@ -171,3 +179,4 @@ void ASurfTriggerVolume::handlePortalEntrance(APlayerCharacter* player) {
 // Probably do nothing also
 void ASurfTriggerVolume::handlePortalExit(APlayerCharacter* player) {
 }
+

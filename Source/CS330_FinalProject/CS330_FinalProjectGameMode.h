@@ -15,7 +15,7 @@ enum class SurfGameState : uint8 {
 class APlayerCharacter;
 class ASurfTriggerVolume;
 class ACS330_FinalProjectHUD;
-
+#include "GhostReplayCharacter.h"
 #include "GameFramework/GameMode.h"
 #include "CS330_FinalProjectGameMode.generated.h"
 
@@ -102,4 +102,6 @@ private:
 	void handleTransitionRunning();
 	void handleTransitionOutOfBounds();
 	void handleTransitionFinishedRunning();
+
+	
 };
