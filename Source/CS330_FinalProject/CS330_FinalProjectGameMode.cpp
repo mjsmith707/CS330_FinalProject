@@ -200,7 +200,11 @@ void ACS330_FinalProjectGameMode::handleTransitionLevelStart() {
 				// Spawn player
 				APlayerController* pcontroller = UGameplayStatics::GetPlayerController(World, 0);
 				ACharacter* pcharacter = pcontroller->GetCharacter();
-				GhostReplay = GetWorld()->SpawnActor<AGhostReplayCharacter>(FVector(0,0,0), FRotator(0,0,0));
+                FActorSpawnParameters SpawnParams;
+                SpawnParams.Owner = this;
+                SpawnParams.Instigator = Instigator;
+                SpawnParams.bNoCollisionFail = true;
+				GhostReplay = GetWorld()->SpawnActor<AGhostReplayCharacter>(spawn->GetActorLocation(), spawn->GetActorRotation(), SpawnParams);
 				GhostReplay->setRecordingObject(pcharacter);
 				AHUD* phud = pcontroller->GetHUD();
 				player = Cast<APlayerCharacter>(pcharacter);
