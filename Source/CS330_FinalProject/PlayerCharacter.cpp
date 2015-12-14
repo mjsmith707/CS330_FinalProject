@@ -27,9 +27,6 @@ APlayerCharacter::APlayerCharacter(const FObjectInitializer& ObjectInitializer) 
 	// player takes control of this character
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 	PCMovementComponent = (UPlayerCharacterMovementComponent*) GetMovementComponent();
-
-	endOfRun = false;
-	record = false;
 }
 
 
@@ -44,9 +41,7 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
-	//if (record){
-		AddPosToVector(FirstPersonCameraComponent->GetComponentLocation());
-	//}
+
 }
 
 // Called to bind functionality to input
@@ -99,26 +94,4 @@ void APlayerCharacter::UpdateLocationAndRotation(FVector location, FRotator rota
 // Returns the current speed of the player for HUD purposes
 double APlayerCharacter::getCurrentSpeed() {
 	return PCMovementComponent->GetCurrentSpeed();
-}
-
-void APlayerCharacter::AddPosToVector(FVector toAdd){
-	movementArray.Push(toAdd);
-}
-
-void APlayerCharacter::setStartGhost(FVector &start){
-	start = movementArray[0];
-}
-
-void APlayerCharacter::EndOfRun(){
-	endOfRun = true;
-}
-
-void APlayerCharacter::StartGhost(){
-	
-	FRotator Rotation(0, 0, 0);
-	GhostReplay = GetWorld()->SpawnActor<AGhostReplayCharacter>(bestArray[0], Rotation);
-}
-
-void APlayerCharacter::CopyBest(){
-	bestArray = movementArray;
 }

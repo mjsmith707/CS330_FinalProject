@@ -115,12 +115,6 @@ void ASurfTriggerVolume::handleStart(APlayerCharacter* player) {
 			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
 			gamemode->transitionState(SurfGameState::Running);
 			APlayerCharacter* Character = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-			//Character->record = true;
-			if (Character->endOfRun == true){
-				Character->endOfRun = false;
-				Character->movementArray.Empty();
-				Character->StartGhost();
-			}
 		}
 	}
 }

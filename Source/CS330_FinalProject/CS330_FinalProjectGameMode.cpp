@@ -4,6 +4,7 @@
 #include "CS330_FinalProjectGameMode.h"
 #include "CS330_FinalProjectHUD.h"
 #include "PlayerCharacter.h"
+#include "GhostReplayCharacter.h"
 #include "SurfTriggerVolume.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -184,7 +185,6 @@ void ACS330_FinalProjectGameMode::handleTransitionLevelStart() {
 				}
 			}
 
-
 			// Spawn the player
 			UWorld* World = GetWorld();
 			if (World) {
@@ -200,6 +200,8 @@ void ACS330_FinalProjectGameMode::handleTransitionLevelStart() {
 				// Spawn player
 				APlayerController* pcontroller = UGameplayStatics::GetPlayerController(World, 0);
 				ACharacter* pcharacter = pcontroller->GetCharacter();
+				GhostReplay = GetWorld()->SpawnActor<AGhostReplayCharacter>(FVector(0,0,0), FRotator(0,0,0));
+				GhostReplay->setRecordingObject(pcharacter);
 				AHUD* phud = pcontroller->GetHUD();
 				player = Cast<APlayerCharacter>(pcharacter);
 				hud = Cast<ACS330_FinalProjectHUD>(phud);
@@ -277,12 +279,11 @@ void ACS330_FinalProjectGameMode::handleTransitionRunning() {
 			// Reset the run timer
 			if (currentStage == 0) {
 				runTimer = 0.0f;
+				GhostReplay->beginRecording();
+				GhostReplay->beginReplaying();
 			}
 			// Reset the stage timer
 			stageTimer[currentStage] = 0.0f;
-			//start the recording of replay
-			APlayerCharacter* Character = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-			//Character->record = true;
 			break;
 		}
 		case SurfGameState::UNKNOWN:
@@ -332,21 +333,12 @@ void ACS330_FinalProjectGameMode::handleTransitionFinishedRunning() {
 			}
 			currentState = SurfGameState::FinishedRunning;
 			if (currentStage+1 == numStages) {
+				GhostReplay->stopRecording();
 				// Add to best times
-
 				if ((bestTime > runTimer) || (bestTime == 0.0f)) {
 					bestTime = runTimer;
-					if (Character->GhostReplay){
-						Character->GhostReplay->DestroyGhost();
-					}
-					Character->CopyBest();
-					Character->movementArray.Empty();
+					GhostReplay->saveRecording();
 				}
-
-				Character->EndOfRun();
-				//Character->record = false;
-				Character->movementArray.Empty();
-				
 			}
 			// Update best stage time
 			if ((bestStageTimes[currentStage] > stageTimer[currentStage]) || (bestStageTimes[currentStage] == 0)) {

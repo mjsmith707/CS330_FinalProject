@@ -9,13 +9,14 @@ AGhostReplayCharacter::AGhostReplayCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	activated = false;
 
 	USphereComponent* SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
 	RootComponent = SphereComponent;
 	SetActorEnableCollision(false);
-	UStaticMeshComponent* GhostVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
+	GhostVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
 	GhostVisual->AttachTo(RootComponent);
+	GhostVisual->SetHiddenInGame(false);
+	GhostVisual->SetVisibility(false);
 
 	//comment the second out and uncomment the following line for production
 	//static ConstructorHelpers::FObjectFinder<UStaticMesh> GhostVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_NarrowCapsule"));
@@ -24,7 +25,7 @@ AGhostReplayCharacter::AGhostReplayCharacter()
 	if (GhostVisualAsset.Succeeded()){
 		GhostVisual->SetStaticMesh(GhostVisualAsset.Object);
 		GhostVisual->SetRelativeLocation(FVector(0, 0, -80));
-		GhostVisual->SetWorldScale3D(FVector(1));
+		GhostVisual->SetWorldScale3D(FVector(1.5));
 	}
 
 	//comment all of this out to return to production lol
@@ -32,7 +33,13 @@ AGhostReplayCharacter::AGhostReplayCharacter()
 	if (material.Succeeded()){
 		GhostVisual->SetMaterial(0, material.Object);
 	}
-	int i = 0;
+	recordingObject = NULL;
+	replayingIndex = 0;
+	recordingIndex = 0;
+	interpMax = 0.016f;
+	replayCount = 0.0f;
+	recordCount = 0.0f;
+	replayMax = 0.0f;
 }
 
 // Called when the game starts or when spawned
@@ -46,15 +53,37 @@ void AGhostReplayCharacter::BeginPlay()
 void AGhostReplayCharacter::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
-	APlayerCharacter* Character = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	if (Character->bestArray[i] != Character->bestArray.Last()){
-		this->SetActorLocation(Character->bestArray[i]);
+	
+	// Replays the sampled object
+	if (replayActive) {
+		replayCount += DeltaTime;
+		if (replayCount >= interpMax) {
+			replayCount = 0.0f;
+			replayingIndex++;
+			if (bestLocationArray.IsValidIndex(replayingIndex)) {
+				SetActorLocation(bestLocationArray[replayingIndex]);
+				SetActorRotation(bestRotationArray[replayingIndex]);
+			}
+			else {
+				stopReplaying();
+			}
+		}
 	}
-	else{
-		i = 0;
-		Destroy();
+
+	if (recordActive) {
+		recordCount += DeltaTime;
+		if (recordCount >= interpMax) {
+			recordCount = 0.0f;
+			if (recordingObject) {
+				recordingLocationArray.Add(recordingObject->GetActorLocation());
+				recordingRotationArray.Add(recordingObject->GetActorRotation());
+			}
+			else {
+				recordActive = false;
+			}
+		}
 	}
-	i++;
+	
 }
 
 // Called to bind functionality to input
@@ -64,8 +93,53 @@ void AGhostReplayCharacter::SetupPlayerInputComponent(class UInputComponent* Inp
 
 }
 
-void AGhostReplayCharacter::DestroyGhost(){
-	Destroy();
+void AGhostReplayCharacter::setRecordingObject(AActor* target) {
+	recordingObject = target;
 }
 
+void AGhostReplayCharacter::beginReplaying() {
+	replayActive = true;
+	replayingIndex = 0;
+	replayCount = 0.0f;
+	if (bestLocationArray.IsValidIndex(replayingIndex)) {
+		SetActorLocation(bestLocationArray[replayingIndex]);
+		GhostVisual->SetVisibility(true);
+	}
+	else {
+		stopReplaying();
+	}
 
+	if (bestRotationArray.IsValidIndex(replayingIndex)) {
+		SetActorRotation(bestRotationArray[replayingIndex]);
+	}
+	else {
+		stopReplaying();
+	}
+}
+
+void AGhostReplayCharacter::beginRecording() {
+	recordActive = true;
+	recordCount = 0;
+	recordingLocationArray.Empty();
+	recordingRotationArray.Empty();
+}
+
+void AGhostReplayCharacter::stopReplaying() {
+	replayActive = false;
+	GhostVisual->SetVisibility(false);
+}
+
+void AGhostReplayCharacter::stopRecording() {
+	recordActive = false;
+}
+
+void AGhostReplayCharacter::saveRecording() {
+	bestLocationArray.Empty();
+	bestRotationArray.Empty();
+	for (auto i : recordingLocationArray) {
+		bestLocationArray.Add(i);
+	}
+	for (auto i : recordingRotationArray) {
+		bestRotationArray.Add(i);
+	}
+}

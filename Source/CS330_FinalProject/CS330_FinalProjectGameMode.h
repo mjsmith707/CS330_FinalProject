@@ -15,6 +15,8 @@ enum class SurfGameState : uint8 {
 class APlayerCharacter;
 class ASurfTriggerVolume;
 class ACS330_FinalProjectHUD;
+class AGhostReplayCharacter;
+
 #include "GhostReplayCharacter.h"
 #include "GameFramework/GameMode.h"
 #include "CS330_FinalProjectGameMode.generated.h"
@@ -45,6 +47,9 @@ private:
 
 	// Player Character
 	APlayerCharacter* player;
+
+	// Player Character Ghost
+	AGhostReplayCharacter* GhostReplay;
 
 	// Player's HUD
 	ACS330_FinalProjectHUD* hud;

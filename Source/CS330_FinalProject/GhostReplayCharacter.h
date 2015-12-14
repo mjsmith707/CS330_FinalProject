@@ -23,9 +23,55 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	bool activated;
-	int i;
+private:
+	// Visual Component
+	UStaticMeshComponent* GhostVisual;
 
-	void DestroyGhost();
-	
+	// Stored location and rotation arrays
+	TArray<FVector> bestLocationArray;
+	TArray<FRotator> bestRotationArray;
+
+	// Recording movement and rotation arrays
+	TArray<FVector> recordingLocationArray;
+	TArray<FRotator> recordingRotationArray;
+
+	// The object to sample
+	AActor* recordingObject;
+
+	// Sampling rates
+	double interpMax;
+	double replayCount;
+	double recordCount;
+	double replayMax;
+
+	// Whether the ghost is replaying
+	bool replayActive;
+
+	// Whether the ghost is recording
+	bool recordActive;
+
+	// Current index in the recording arrays
+	unsigned int recordingIndex;
+
+	// Current index in the replaying arrays
+	unsigned int replayingIndex;
+
+public:
+	// Sets the object to record
+	void setRecordingObject(AActor*);
+
+	// Starts replaying the object
+	void beginReplaying();
+
+	// Starts recording the object
+	void beginRecording();
+
+	// Stops replaying the object
+	void stopReplaying();
+
+	// Stops recording the object
+	void stopRecording();
+
+	// Stores the recording as the best
+	void saveRecording();
 };

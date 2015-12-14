@@ -39,18 +39,4 @@ public:
 
 	// Returns the current speed of the player for HUD purposes
 	double getCurrentSpeed();
-
-	void AddPosToVector(FVector toAdd);
-
-	TArray<FVector>movementArray;
-	TArray<FVector>bestArray;
-	FVector movementVector;
-	FVector movementCounter;
-	bool endOfRun;
-	void setStartGhost(FVector &start);
-	void EndOfRun();
-	void StartGhost();
-	bool record;
-	AGhostReplayCharacter* GhostReplay;
-	void CopyBest();
 };
