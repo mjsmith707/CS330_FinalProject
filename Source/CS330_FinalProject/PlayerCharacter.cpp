@@ -95,3 +95,7 @@ void APlayerCharacter::UpdateLocationAndRotation(FVector location, FRotator rota
 double APlayerCharacter::getCurrentSpeed() {
 	return PCMovementComponent->GetCurrentSpeed();
 }
+
+void APlayerCharacter::StopCharacter(){
+	PCMovementComponent->StopCharacter();
+}

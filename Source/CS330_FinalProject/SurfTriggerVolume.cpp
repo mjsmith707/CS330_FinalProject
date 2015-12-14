@@ -114,7 +114,6 @@ void ASurfTriggerVolume::handleStart(APlayerCharacter* player) {
 		if (gm) {
 			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
 			gamemode->transitionState(SurfGameState::Running);
-			APlayerCharacter* Character = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 		}
 	}
 }
@@ -145,6 +144,7 @@ void ASurfTriggerVolume::handleOutOfBounds(APlayerCharacter* player) {
 		AGameMode* gm = world->GetAuthGameMode();
 		if (gm) {
 			ACS330_FinalProjectGameMode* gamemode = Cast<ACS330_FinalProjectGameMode>(gm);
+			player->StopCharacter();
 			gamemode->transitionState(SurfGameState::OutOfBounds);
 		}
 	}

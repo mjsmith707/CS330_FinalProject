@@ -14,7 +14,7 @@ UPlayerCharacterMovementComponent::UPlayerCharacterMovementComponent(){
 	// this->MaxWalkSpeed =  800.0f;
 	// general movement and airspeed; these should be separated into 2 different things, so should be dynamically set depending on player state
 	// "The maximum ground speed when walking. Also determines maximum lateral speed when falling."
-	
+
 	// MaxAcceleration
 	// self-described
 	// "Max Acceleration (rate of change of velocity)"
@@ -27,21 +27,25 @@ UPlayerCharacterMovementComponent::UPlayerCharacterMovementComponent(){
 
 	// these 2 settings shouldn't matter, since we're giving the player full aircontrol anyways
 	// full aircontrol isn't great in UE4 
-	
+
+	// ue4 constant, not used, custom physics instead
 	// air control boosting zoom zoom
 	// "multiplier applied to AirControl when lateral velocity is less than AirControlBoostVelocityThreshold" 
 	// https://docs.unrealengine.com/latest/INT/API/Runtime/Engine/GameFramework/UCharacterMovementComponent/AirControlBoostM-/index.html
-	this->AirControlBoostMultiplier = 2.0f;
+	//this->AirControlBoostMultiplier = 2.0f;
 
+	// ue4 constant, not used, custom physics instead
 	// speed threshold to boost until
 	// "When falling, if lateral velocity magnitude is less than this value, AirControl is multiplied by AirControlBoostMultiplier"
 	// https://docs.unrealengine.com/latest/INT/API/Runtime/Engine/GameFramework/UCharacterMovementComponent/AirControlBoostV-/index.html
-	this->AirControlBoostVelocityThreshold = 100000.0f;
+	// this->AirControlBoostVelocityThreshold = 100000.0f;
 
+	// set these so the character movement component lets our character handle this (otherwise PerformMovement might
+	// try affecting our velocity) 
 	this->BrakingDecelerationWalking = 0.0f;
 	this->GroundFriction = 0.0f;
 
-	// carefully chosen values
+	// carefully chosen values through playtesting
 	C_InitialAirAccelerationFriction = 5.0f;
 	C_InitialAirAcceleration = 30000.0f;
 	C_InitialGroundAcceleration = 3200.0f;
@@ -50,7 +54,14 @@ UPlayerCharacterMovementComponent::UPlayerCharacterMovementComponent(){
 	C_InitialMinInitialVelocity = 100.0f;
 	C_HopImpulse = 52500.0f;
 
-    C_DeltaTimeForPhysics = (1.f / 120.f); // please don't fail me
+	// for tweaking
+	C_AirAccelerationFriction = C_InitialAirAccelerationFriction;
+	C_AirAcceleration = C_InitialAirAcceleration;
+	C_GroundAcceleration = C_InitialGroundAcceleration;
+	C_AirAccelerationMaxVelocity = C_InitialAirAccelerationMaxVelocity;
+	C_GroundAccelerationMaxVelocity = C_InitialGroundAccelerationMaxVelocity;
+	C_MinInitialVelocity = C_InitialMinInitialVelocity;
+
 	// this and C_HopImpulse are pretty closely tied together
 	this->GravityScale = 1.5f;
 
@@ -66,12 +77,12 @@ UPlayerCharacterMovementComponent::UPlayerCharacterMovementComponent(){
 	AAccel = FVector(0.0f, 0.0f, 0.0f);
 	AVel = FVector(0.f, 0.f, 0.f);
 	dbgArbitraryAccel = false;
-}	
+}
 
 void UPlayerCharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction){
 	//if (!Acceleration.IsNearlyZero())
 	//Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
+
 	// material friction and restitution don't seem to affect the 'falling' behavior we're after
 
 	// adjusting the Velocity and Acceleration fvectors directly will affect behavior of the character
@@ -82,31 +93,22 @@ void UPlayerCharacterMovementComponent::TickComponent(float DeltaTime, enum ELev
 	/*
 	* get useful data here
 	*/
-	
+
 	// consumed input vector (don't need this if propagating to the Super::TickComponent call, but if managing accel and velocity ourselves need to grab this here);
 	FVector consumed = ConsumeInputVector();
-	
+
 	// are contacting anything (during fall)
 	bool HaveContact = false;
 	bool AirAccelerating = false;
 
-	// this hit will have the normal of the colliding surface
-	// nice properties of this:
-	// doesn't count 'floors' (things we walk on)
-	// only counts hits when we move into a wall, i.e. corresponds nicely with 'surfing' behavior
-	FHitResult Hit;
-	
-	GetHit(Hit, HaveContact, DeltaTime);
-	FVector HitSurfaceNormal = FVector(0.f, 0.f, 0.f);
-	
 	/*
-	 * start doing adjustments to player trajectory here
-	 */
+	* start doing adjustments to player trajectory here
+	*/
 
 	FVector accelDir = FVector(consumed.X, consumed.Y, consumed.Z);
 	FVector prevVelocity = FVector(Velocity.X, Velocity.Y, Velocity.Z);
 
-	AirAccelerating = !IsMovingOnGround() && (IsFalling() ||  IsFlying());
+	AirAccelerating = !IsMovingOnGround() && (IsFalling() || IsFlying());
 
 	if (AirAccelerating){
 		Velocity = MoveAir(accelDir, prevVelocity, DeltaTime);
@@ -134,88 +136,31 @@ void UPlayerCharacterMovementComponent::TickComponent(float DeltaTime, enum ELev
 	* end adjustments to player trajectory
 	*/
 
-    float AdjustedDT = DeltaTime / C_DeltaTimeForPhysics;
-    GEngine->AddOnScreenDebugMessage(2, 1.f, FColor::Green, FString::Printf(TEXT("DT: %f, ADT: %f"), DeltaTime, AdjustedDT));
-	
-    // don't ask questions
-    // physics: fixed
-    //C_AirAccelerationFriction = C_InitialAirAccelerationFriction * AdjustedDT;
-    C_AirAccelerationFriction = C_InitialAirAccelerationFriction;
-    C_AirAcceleration = C_InitialAirAcceleration * AdjustedDT;
-    C_GroundAcceleration = C_InitialGroundAcceleration * AdjustedDT;
-    C_AirAccelerationMaxVelocity = C_InitialAirAccelerationMaxVelocity * AdjustedDT;
-    C_GroundAccelerationMaxVelocity = C_InitialGroundAccelerationMaxVelocity * AdjustedDT;
-    C_MinInitialVelocity = C_InitialMinInitialVelocity* AdjustedDT;
-	// debug info
-	// accel seems to not have a z-component? Is this just gravity? Even for jumps, no z-accel at all... what about z-accel for going up ramps?
-	/*GEngine->AddOnScreenDebugMessage(2, 1.f, FColor::Green, FString::Printf(TEXT("Acceleration: (%0.3f, %0.3f, %0.3f), Z-Gravity accel: %f"), Acceleration.X, Acceleration.Y, Acceleration.Z, GetGravityZ()));
-	GEngine->AddOnScreenDebugMessage(3, 1.f, FColor::Green, FString::Printf(TEXT("Velocity: %f (%0.3f, %0.3f, %0.3f)"), Velocity.Size(), Velocity.X, Velocity.Y, Velocity.Z));
-	GEngine->AddOnScreenDebugMessage(4, 1.f, FColor::Green, FString::Printf(TEXT("Consumed input: (%0.3f, %0.3f, %0.3f)"), consumed.X, consumed.Y, consumed.Z));
-	GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, FString::Printf(TEXT("CustomFalling? %d          Falling? %d          Flying? %d          Walking? %d          IsMovingOnGround? %d          HaveContact? %d          AirAccelerating? %d"), MovementMode == MOVE_Custom, IsFalling(), IsFlying(), IsWalking(), IsMovingOnGround(), HaveContact, AirAccelerating));
-	GEngine->AddOnScreenDebugMessage(6, 1.f, HaveContact ? FColor::Green : FColor::Red, FString::Printf(TEXT("Contact normal: (%f, %f, %f)"), HitSurfaceNormal.X, HitSurfaceNormal.Y, HitSurfaceNormal.Z));
-	*/
+	float x = (1.f / DeltaTime);
+	float AdjustedDT = FMath::Pow(2.71828182845f, (-(x - 120.f) / 160.f));
+	C_AirAccelerationFriction = C_InitialAirAccelerationFriction * ((x / 120.f));
+	C_AirAccelerationMaxVelocity = C_InitialAirAccelerationMaxVelocity * AdjustedDT;
 }
 
-void UPlayerCharacterMovementComponent::GetHit(FHitResult& Hit, bool& HaveContact, float DeltaTime){
-	// here, use the 'sample' way of getting a hit
-	FVector consumed = GetLastInputVector();
-	FVector DesiredMovementThisFrame = consumed.GetClampedToMaxSize(1.0f) * DeltaTime;
-	if (!DesiredMovementThisFrame.IsNearlyZero())
-	{
 
-		// this technically moves the character twice per tick to the same place, since we use the last input vector as the consumed input vector
-		// not super efficient, but I haven't found a better way to do this (also haven't put much effort into it)
-		SafeMoveUpdatedComponent(DesiredMovementThisFrame, UpdatedComponent->GetComponentRotation(), true, Hit);
-
-		if (Hit.IsValidBlockingHit())
-		{
-			HaveContact = true;
-			//SlideAlongSurface(DesiredMovementThisFrame, 1.f - Hit.Time, Hit.Normal, Hit, false);
-		}
-	}
-}
-
-// airstrafing code from http://flafla2.github.io/2015/02/14/bunnyhop.html
+// airstrafing logic from http://flafla2.github.io/2015/02/14/bunnyhop.html
 // accelDir: normalized direction that the player has requested to move (taking into account the movement keys and look direction)
 // prevVelocity: The current velocity of the player, before any additional calculations
 // accelerate: The server-defined player acceleration value
 // max_velocity: The server-defined maximum player velocity (this is not strictly adhered to due to strafejumping)
 FVector UPlayerCharacterMovementComponent::Accelerate(FVector accelDir, FVector prevVelocity, float accelerate, float max_velocity, float DeltaTime)
 {
-	/*
-	float projVel = Vector3.Dot(prevVelocity, accelDir); // Vector projection of Current velocity onto accelDir.
-	float accelVel = accelerate * Time.fixedDeltaTime; // Accelerated velocity in direction of movment
-
-	// If necessary, truncate the accelerated velocity so the vector projection does not exceed max_velocity
-	if (projVel + accelVel > max_velocity)
-		accelVel = max_velocity - projVel;	
-
-	return prevVelocity + accelDir * accelVel;
-	*/
 	float projVel = FVector::DotProduct(prevVelocity, accelDir); // Vector projection of Current velocity onto accelDir.
 	float accelVel = accelerate * DeltaTime; // Accelerated velocity in direction of movment
 
 	// If necessary, truncate the accelerated velocity so the vector projection does not exceed max_velocity
 	if (projVel + accelVel > max_velocity)
 		accelVel = max_velocity - projVel;
-		
 	return (prevVelocity + accelDir * accelVel);
 }
 
 FVector UPlayerCharacterMovementComponent::MoveGround(FVector accelDir, FVector prevVelocity, float DeltaTime)
 {
-	/*
-	// Apply Friction
-	float speed = prevVelocity.magnitude;
-	if (speed != 0) // To avoid divide by zero errors
-	{
-		float drop = speed * friction * Time.fixedDeltaTime;
-		prevVelocity *= Mathf.Max(speed - drop, 0) / speed; // Scale the velocity based on friction.
-	}
-
-	// ground_accelerate and max_velocity_ground are server-defined movement variables
-	return Accelerate(accelDir, prevVelocity, ground_accelerate, max_velocity_ground);
-	*/
 
 	// Apply Friction
 	float speed = prevVelocity.Size();//prevVelocity.magnitude;
@@ -231,12 +176,6 @@ FVector UPlayerCharacterMovementComponent::MoveGround(FVector accelDir, FVector 
 
 FVector UPlayerCharacterMovementComponent::MoveAir(FVector accelDir, FVector prevVelocity, float DeltaTime)
 {
-	/*
-	// air_accelerate and max_velocity_air are server-defined movement variables
-	return Accelerate(accelDir, prevVelocity, air_accelerate, max_velocity_air);
-	*/
-
-	// air_accelerate and max_velocity_air are server-defined movement variables
 	return Accelerate(accelDir, prevVelocity, C_AirAcceleration, C_AirAccelerationMaxVelocity, DeltaTime);
 }
 
@@ -252,9 +191,16 @@ double UPlayerCharacterMovementComponent::GetCurrentSpeed(){
 	return Velocity.Size();
 }
 
-// slope boosting: handled
-// KKappa
+// slope boosting handled
+// this took a lot of digging to finally find out as being the culprit behind 'falling upwards' issues
 FVector UPlayerCharacterMovementComponent::HandleSlopeBoosting(const FVector& SlideResult, const FVector& Delta, const float Time, const FVector& Normal, const FHitResult& Hit) const
 {
-	return SlideResult; 
+	return SlideResult;
+}
+
+void UPlayerCharacterMovementComponent::StopCharacter(){
+
+	Velocity.X = 0.f;
+	Velocity.Y = 0.f;
+	Velocity.Z = 0.f;
 }

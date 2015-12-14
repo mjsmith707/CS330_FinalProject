@@ -34,6 +34,9 @@ public:
 	void Jump();
 	void StopJumping();
 
+	// stop movement out of portals
+	void StopCharacter();
+
 	// Bridge function for TriggerVolume->CharMovementComponent
 	void UpdateLocationAndRotation(FVector location, FRotator rotation);
 
